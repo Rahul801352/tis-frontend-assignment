@@ -49,6 +49,9 @@ export const Contact: React.FC = () => {
       if (data.success) {
         setSubmittedRef(data.data.referenceId);
         try {
+          window.dispatchEvent(new CustomEvent('tis_record_added', { detail: data.data }));
+        } catch (_) {}
+        try {
           confetti({
             particleCount: 90,
             spread: 60,
@@ -220,11 +223,23 @@ export const Contact: React.FC = () => {
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     You can view this submission in real-time in the &ldquo;Live Backend DB&rdquo; inspector in the bottom-left corner!
                   </p>
-                  <div className="pt-4">
+                  <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          (window as any).openTisSubmissionsDrawer?.();
+                        }
+                      }}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold hover:scale-105 transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-[#b90124]" />
+                      <span>View in Live Database Inspector</span>
+                    </button>
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="px-6 py-2.5 rounded-xl bg-[#b90124] text-white text-xs font-bold hover:bg-[#96001d] transition-colors shadow-md"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#b90124] text-white text-xs font-bold hover:bg-[#96001d] transition-colors shadow-md"
                     >
                       Submit Another Query
                     </button>

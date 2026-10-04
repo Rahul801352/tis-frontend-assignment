@@ -53,6 +53,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, def
       if (data.success) {
         setSubmittedRef(data.data.referenceId);
         try {
+          window.dispatchEvent(new CustomEvent('tis_record_added', { detail: data.data }));
+        } catch (_) {}
+        try {
           confetti({
             particleCount: 80,
             spread: 70,
@@ -143,13 +146,28 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, def
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
                     Our Senior Admissions Counselor will contact you via phone and email within 24 hours with the campus prospectus and entrance guidelines.
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="px-6 py-2.5 rounded-xl bg-[#b90124] text-white font-medium hover:bg-[#96001d] transition-colors shadow-md"
-                  >
-                    Done / Close
-                  </button>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleReset();
+                        if (typeof window !== "undefined") {
+                          (window as any).openTisSubmissionsDrawer?.();
+                        }
+                      }}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold hover:scale-105 transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-[#b90124]" />
+                      <span>View in Live Database Inspector</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#b90124] text-white text-xs font-bold hover:bg-[#96001d] transition-colors shadow-md"
+                    >
+                      Done / Close
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { EnquiryPayload, EnquiryRecord, ContactMessage, NewsletterSubscriber } from '../types';
 
 interface DatabaseSchema {
@@ -8,10 +9,12 @@ interface DatabaseSchema {
   newsletter: NewsletterSubscriber[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
+// In serverless environments (Vercel/AWS Lambda), process.cwd() is read-only,
+// but os.tmpdir() (/tmp) is writable and persists across function calls on the worker.
+const TMP_DB = path.join(os.tmpdir(), 'tis_database_v2.json');
+const LOCAL_DB = path.join(process.cwd(), 'data', 'db.json');
 
-// In-memory fallback in case of read-only serverless environment
+// In-memory global store to survive warm lambdas
 let memoryStore: DatabaseSchema = {
   enquiries: [
     {
@@ -64,31 +67,64 @@ let memoryStore: DatabaseSchema = {
 };
 
 function ensureDbExists(): DatabaseSchema {
+  // 1. Try reading from TMP_DB (writable persistent location on Vercel)
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (fs.existsSync(TMP_DB)) {
+      const content = fs.readFileSync(TMP_DB, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (parsed && Array.isArray(parsed.enquiries)) {
+        memoryStore = parsed;
+        return parsed;
+      }
     }
-    if (!fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify(memoryStore, null, 2), 'utf-8');
-      return memoryStore;
-    }
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
   } catch (err) {
-    console.warn("Storage falling back to in-memory:", err);
-    return memoryStore;
+    console.warn("Could not read TMP_DB:", err);
   }
+
+  // 2. Try reading bundled LOCAL_DB
+  try {
+    if (fs.existsSync(LOCAL_DB)) {
+      const content = fs.readFileSync(LOCAL_DB, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (parsed && Array.isArray(parsed.enquiries)) {
+        memoryStore = parsed;
+        // Copy to TMP_DB so future writes/reads use it
+        try {
+          fs.writeFileSync(TMP_DB, JSON.stringify(parsed, null, 2), 'utf-8');
+        } catch (_) {}
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not read LOCAL_DB:", err);
+  }
+
+  // 3. Fallback to memory store
+  try {
+    fs.writeFileSync(TMP_DB, JSON.stringify(memoryStore, null, 2), 'utf-8');
+  } catch (_) {}
+  return memoryStore;
 }
 
 function saveDb(data: DatabaseSchema): void {
   memoryStore = data;
+  
+  // Always write to TMP_DB (writable on Vercel)
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    fs.writeFileSync(TMP_DB, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
-    console.warn("Could not write to disk, saved in memory:", err);
+    console.warn("Could not write to TMP_DB:", err);
+  }
+
+  // Also try writing to LOCAL_DB for local dev
+  try {
+    const dataDir = path.dirname(LOCAL_DB);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(LOCAL_DB, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (_) {
+    // Expected to fail on read-only serverless filesystems
   }
 }
 
@@ -164,6 +200,6 @@ export function getStats() {
     recentEnquiries: db.enquiries.slice(0, 5),
     systemStatus: "ONLINE",
     uptimeSeconds: Math.floor(process.uptime()),
-    database: "JSON-File / In-Memory (Persistent)"
+    database: "Vercel /tmp + File Storage (Active)"
   };
 }
