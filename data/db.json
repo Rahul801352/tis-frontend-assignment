@@ -1,0 +1,50 @@
+{
+  "enquiries": [
+    {
+      "id": "enq-init-1",
+      "referenceId": "TIS-2026-8921",
+      "fullName": "Vikram Malhotra",
+      "email": "vikram.malhotra@example.com",
+      "phone": "9876543210",
+      "countryCode": "91",
+      "classGrade": "Class IX",
+      "state": "Delhi",
+      "message": "Interested in boarding admission for Class 9 with basketball training.",
+      "consent": true,
+      "createdAt": "2026-10-03T07:01:54.914Z",
+      "status": "CONTACTED"
+    },
+    {
+      "id": "enq-init-2",
+      "referenceId": "TIS-2026-9044",
+      "fullName": "Ananya Deshmukh",
+      "email": "deshmukh.family@example.com",
+      "phone": "9812345678",
+      "countryCode": "91",
+      "classGrade": "Class XI",
+      "state": "Maharashtra",
+      "message": "Looking for Science stream (PCM) with competitive JEE guidance.",
+      "consent": true,
+      "createdAt": "2026-10-03T19:01:54.915Z",
+      "status": "PENDING"
+    }
+  ],
+  "contacts": [
+    {
+      "id": "con-init-1",
+      "name": "Rajesh Singhania",
+      "email": "r.singhania@example.com",
+      "phone": "9823019283",
+      "subject": "Campus Tour Request",
+      "message": "We would like to visit the campus this coming Saturday at 11 AM.",
+      "createdAt": "2026-10-02T07:01:54.915Z"
+    }
+  ],
+  "newsletter": [
+    {
+      "id": "sub-init-1",
+      "email": "parent.community@example.com",
+      "subscribedAt": "2026-10-01T07:01:54.915Z"
+    }
+  ]
+}
