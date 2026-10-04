@@ -16,8 +16,8 @@ The application features smooth **Framer Motion** scroll animations, an interact
 
 ## 🚀 Live Demo & Repository
 
-- **Live Deployed Website**: *Deployable to Vercel / Netlify with 1-click zero config*
-- **GitHub Repository**: `tis-frontend-assignment`
+- **Live Deployed Website**: **[https://tis-frontend-assignment-pi.vercel.app](https://tis-frontend-assignment-pi.vercel.app)**
+- **GitHub Repository**: **[https://github.com/Rahul801352/tis-frontend-assignment](https://github.com/Rahul801352/tis-frontend-assignment)**
 - **Reference Website**: [https://tis.edu.in/](https://tis.edu.in/)
 
 ---
